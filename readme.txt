@@ -1,5 +1,5 @@
 === Gravity Forms YMLP Add-on ===
-Tags: gravity forms, forms, gravity, form, crm, gravity form, email, newsletter, YMLP, YMLP, mailing list, email marketing, newsletters
+Tags: gravity forms, forms, gravity, form, gravity form, email, newsletter, YMLP, YMLP, mailing list, email marketing, newsletters
 Requires at least: 2.8
 Tested up to: 3.4.2
 Stable tag: trunk
@@ -49,6 +49,10 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 1.0.2 =
+* Fixed issue with incorrect formatting of some fields
+* Added support for "Address (Full)" and "Name (Full)" data fields
+
 = 1.0.1 =
 * Fixed issue with incorrect formatting of date fields
 
@@ -56,6 +60,10 @@ This plugin is released under a GPL license.
 * Liftoff!
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+* Fixed issue with incorrect formatting of some fields
+* Added support for "Address (Full)" and "Name (Full)" data fields
 
 = 1.0.1 =
 * Fixed issue with incorrect formatting of date fields

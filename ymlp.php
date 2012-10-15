@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms YMLP Add-On
 Plugin URI: http://www.gravityforms.com
 Description: Integrates Gravity Forms with YMLP allowing form submissions to be automatically sent to your YMLP account
-Version: 1.0.1
+Version: 1.0.2
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -34,7 +34,7 @@ class GFYMLP {
     private static $path = "gravity-forms-ymlp/ymlp.php";
     private static $url = "http://www.gravityforms.com";
     private static $slug = "gravity-forms-ymlp";
-    private static $version = "1.0.1";
+    private static $version = "1.0.2";
     private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
@@ -1022,6 +1022,10 @@ EOD;
                 if(isset($field["inputs"]) && is_array($field["inputs"]) && $field['type'] !== 'checkbox' && $field['type'] !== 'select'){
 
                     //If this is an address field, add full name to the list
+                    if(RGFormsModel::get_input_type($field) == "name")
+                        $fields[] =  array($field["id"], GFCommon::get_label($field) . " (" . __("Full" , "gravityformsmailchimp") . ")");
+                    
+                    //If this is an address field, add full name to the list
                     if(RGFormsModel::get_input_type($field) == "address")
                         $fields[] =  array($field["id"], GFCommon::get_label($field) . " (" . __("Full" , "gravityformsmailchimp") . ")");
 
@@ -1092,27 +1096,66 @@ EOD;
 	        }
         }
         
-        
         foreach($feed["meta"]["field_map"] as $var_tag => $field_id) {
 
             $field = RGFormsModel::get_field($form, $field_id);
             
             if($field['id'] === $email_field_id) { continue; }
             
+            $input_type = RGFormsModel::get_input_type($field);
+            
             $value = RGFormsModel::get_lead_field_value($entry, $field);
-
+            
+            switch($input_type) {
+            	case "date":
+            		$value = GFCommon::get_lead_field_display($field, $value);
+            	break;
+            	case "name":
+            		if(is_int($field_id * 1)) {
+ 	            		$value = GFCommon::get_lead_field_display($field, $value);
+	            	}
+	            break;
+        	}
+            
             if(!is_array($value)) {
-            	$field_value = GFCommon::get_lead_field_display($field, $value);
+            	$field_value = $value; //GFCommon::get_lead_field_display($field, $value);
         	} else {
+
+	        	// By default, get the array as a string
         		$field_value = implode(', ', $value);
+        		
+        		// But if there's a specific ID set, get that instead.
+        		foreach($value as $k => $v) {
+	        		if($field_id === $k) {
+		        		$field_value = $v;
+	        		}
+        		}
         	}
         	
-        	$merge_vars['Field'.$var_tag] = strip_tags($field_value);
+        	$merge_vars['Field'.$var_tag] = esc_html(strip_tags($field_value));
         }
 
 		$retval = $api->ContactsAdd($email, $merge_vars, $groupID);
 		
 		self::show_admin_messages($retval, $merge_vars);
+    }
+    
+    private static function get_address($entry, $field_id){
+        $street_value = str_replace("  ", " ", trim($entry[$field_id . ".1"]));
+        $street2_value = str_replace("  ", " ", trim($entry[$field_id . ".2"]));
+        $city_value = str_replace("  ", " ", trim($entry[$field_id . ".3"]));
+        $state_value = str_replace("  ", " ", trim($entry[$field_id . ".4"]));
+        $zip_value = trim($entry[$field_id . ".5"]);
+        $country_value = GFCommon::get_country_code(trim($entry[$field_id . ".6"]));
+
+        $address = $street_value;
+        $address .= !empty($address) && !empty($street2_value) ? "  $street2_value" : $street2_value;
+        $address .= !empty($address) && (!empty($city_value) || !empty($state_value)) ? "  $city_value" : $city_value;
+        $address .= !empty($address) && !empty($city_value) && !empty($state_value) ? "  $state_value" : $state_value;
+        $address .= !empty($address) && !empty($zip_value) ? "  $zip_value" : $zip_value;
+        $address .= !empty($address) && !empty($country_value) ? "  $country_value" : $country_value;
+
+        return $address;
     }
     
     private static function show_admin_messages($apiReturn, $data = array()) {
@@ -1124,7 +1167,7 @@ EOD;
 	    	echo '<div style="border:1px solid #ccc; background:white; padding:10px;">
 	    		<h3>Admin-Only Message</h3>';
 	    	echo '<h4>'.$message.'</h4>';
-	    	if(!empty($apiReturn['Output'])) { echo '<p>Submitted Form Response: '.$apiReturn['Output'].'</p>'; }
+	    	if(!empty($apiReturn['Output'])) { echo '<p>Response from YMLP: '.$apiReturn['Output'].'</p>'; }
 	    	echo '<h4>Submitted form data:</h4>';
 	    	self::r($data);
 	    	echo '</div>';
