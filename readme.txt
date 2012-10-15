@@ -12,7 +12,7 @@ Integrate the Gravity Forms contact form plugin with YMLP, a newsletter mailing 
 
 ### Integrate Gravity Forms with YMLP
 
-Gravity Forms is the best form plugin for WordPress. <a href="http://www.ymlp.com" rel="nofollow">YMLP</a> is one of the best email marketing companies out there. It's a match made in heaven!
+Gravity Forms is the best form plugin for WordPress. YMLP is one of the best email marketing companies out there. It's a match made in heaven!
 
 #### __Each form submission gets added to YMLP__ as a contact.
 
